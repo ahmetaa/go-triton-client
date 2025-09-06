@@ -18,7 +18,7 @@ func TestNewClient_Success(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	c, err := NewClient("localhost:50051", true, 30.0, 10.0, false, false, nil, nil)
+	c, err := NewClient("localhost:50051", true, 30.0, 10.0, false, false, nil)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
@@ -28,7 +28,7 @@ func TestNewClient_Error(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	c, err := NewClient("invalid_url\n", true, 30.0, 10.0, false, false, nil, nil)
+	c, err := NewClient("invalid_url\n", true, 30.0, 10.0, false, false, nil)
 
 	assert.Error(t, err)
 	assert.Nil(t, c)

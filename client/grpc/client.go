@@ -2,50 +2,98 @@ package grpc
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/Trendyol/go-triton-client/base"
 	"github.com/Trendyol/go-triton-client/client/grpc/grpc_generated_v2"
 	"github.com/Trendyol/go-triton-client/models"
 	"github.com/Trendyol/go-triton-client/options"
 	"google.golang.org/grpc"
-	"log"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type client struct {
-	baseURL           string
-	verbose           bool
-	connectionTimeout float64
-	networkTimeout    float64
-	ssl               bool
-	insecure          bool
-	client            grpc_generated_v2.GRPCInferenceServiceClient
-	logger            *log.Logger
+	verbose bool
+	client  grpc_generated_v2.GRPCInferenceServiceClient
+	logger  *log.Logger
 }
 
-// NewClient creates a new gRPCInferenceServerClient.
-func NewClient(url string, verbose bool, connectionTimeout float64, networkTimeout float64, ssl bool, insecureConnection bool, grpcConnection *grpc.ClientConn, logger *log.Logger) (base.Client, error) {
+// NewClient creates a new gRPCInferenceServerClient by establishing a new gRPC connection.
+func NewClient(url string, verbose bool, connectionTimeout float64, networkTimeout float64, ssl bool, insecureConnection bool, logger *log.Logger) (base.Client, error) {
 	if logger == nil {
 		logger = log.Default()
 	}
 
-	if grpcConnection == nil {
-		grpcClient, err := base.NewGrpcClient(url, connectionTimeout, networkTimeout, ssl, insecureConnection)
-		if err != nil {
-			return nil, err
-		}
-		grpcConnection = grpcClient.GetConnection()
+	opts := CreateDialOptions(connectionTimeout, ssl, insecureConnection)
+
+	// Prepare context with network timeout
+	ctx := context.Background()
+	if networkTimeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, time.Duration(networkTimeout*float64(time.Second)))
+		defer cancel()
+	}
+
+	grpcConnection, err := grpc.NewClient(url, opts...)
+	if err != nil {
+		return nil, err
 	}
 
 	return &client{
-		baseURL:           url,
-		verbose:           verbose,
-		connectionTimeout: connectionTimeout,
-		networkTimeout:    networkTimeout,
-		ssl:               ssl,
-		insecure:          insecureConnection,
-		client:            grpc_generated_v2.NewGRPCInferenceServiceClient(grpcConnection),
-		logger:            logger,
+		verbose: verbose,
+		client:  grpc_generated_v2.NewGRPCInferenceServiceClient(grpcConnection),
+		logger:  logger,
+	}, nil
+}
+
+// CreateDialOptions creates gRPC dial options with the given parameters.
+// This is a public convenience function that allows users to create dial options
+// and then create their own gRPC connections with additional customizations.
+func CreateDialOptions(connectionTimeout float64, ssl bool, insecureConnection bool) []grpc.DialOption {
+	var opts []grpc.DialOption
+
+	// Add SSL/TLS credentials
+	if ssl {
+		var creds credentials.TransportCredentials
+		if insecureConnection {
+			creds = credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})
+		} else {
+			creds = credentials.NewTLS(&tls.Config{})
+		}
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
+
+	// Add connection timeout
+	if connectionTimeout > 0 {
+		opts = append(opts, grpc.WithConnectParams(grpc.ConnectParams{
+			MinConnectTimeout: time.Duration(connectionTimeout * float64(time.Second)),
+		}))
+	}
+
+	return opts
+}
+
+// NewClientWithGrpcConnection creates a new gRPCInferenceServerClient using an existing gRPC connection.
+func NewClientWithGrpcConnection(grpcConnection *grpc.ClientConn, verbose bool, logger *log.Logger) (base.Client, error) {
+	if grpcConnection == nil {
+		return nil, fmt.Errorf("grpcConnection cannot be nil")
+	}
+
+	if logger == nil {
+		logger = log.Default()
+	}
+
+	return &client{
+		verbose: verbose,
+		client:  grpc_generated_v2.NewGRPCInferenceServiceClient(grpcConnection),
+		logger:  logger,
 	}, nil
 }
 
