@@ -28,6 +28,9 @@ if [ ! -d "$TEMP_DIR/$PROTO_PATH" ]; then
     exit 1
 fi
 
+# No need to include health.proto.
+rm $TEMP_DIR/$PROTO_PATH/health.proto
+
 echo "Found proto files in $TEMP_DIR/$PROTO_PATH:"
 find "$TEMP_DIR/$PROTO_PATH" -name "*.proto" | xargs -n1 basename
 
