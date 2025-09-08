@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 )
 
 type client struct {
@@ -24,12 +25,12 @@ type client struct {
 }
 
 // NewClient creates a new gRPCInferenceServerClient by establishing a new gRPC connection.
-func NewClient(url string, verbose bool, connectionTimeout float64, networkTimeout float64, ssl bool, insecureConnection bool, logger *log.Logger) (base.Client, error) {
+func NewClient(url string, verbose bool, connectionTimeout float64, networkTimeout float64, ssl bool, insecureConnection bool, keepAliveParameters *keepalive.ClientParameters, logger *log.Logger) (base.Client, error) {
 	if logger == nil {
 		logger = log.Default()
 	}
 
-	opts := CreateDialOptions(connectionTimeout, ssl, insecureConnection)
+	opts := CreateDialOptions(connectionTimeout, ssl, insecureConnection, keepAliveParameters)
 
 	// Prepare context with network timeout
 	ctx := context.Background()
@@ -54,7 +55,7 @@ func NewClient(url string, verbose bool, connectionTimeout float64, networkTimeo
 // CreateDialOptions creates gRPC dial options with the given parameters.
 // This is a public convenience function that allows users to create dial options
 // and then create their own gRPC connections with additional customizations.
-func CreateDialOptions(connectionTimeout float64, ssl bool, insecureConnection bool) []grpc.DialOption {
+func CreateDialOptions(connectionTimeout float64, ssl bool, insecureConnection bool, keepAliveParameters *keepalive.ClientParameters) []grpc.DialOption {
 	var opts []grpc.DialOption
 
 	// Add SSL/TLS credentials
@@ -75,6 +76,11 @@ func CreateDialOptions(connectionTimeout float64, ssl bool, insecureConnection b
 		opts = append(opts, grpc.WithConnectParams(grpc.ConnectParams{
 			MinConnectTimeout: time.Duration(connectionTimeout * float64(time.Second)),
 		}))
+	}
+
+	// Add keepAlive parameters
+	if keepAliveParameters != nil {
+		opts = append(opts, grpc.WithKeepaliveParams(*keepAliveParameters))
 	}
 
 	return opts
