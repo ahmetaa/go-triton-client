@@ -222,7 +222,6 @@ func DeserializeBytesTensor(encodedTensor []byte) ([]string, error) {
 // --- Interface Slice Conversion ---
 
 // ConvertibleFromFloat64 is a constraint for numeric types that can be converted from a float64.
-// This part was good!
 type ConvertibleFromFloat64 interface {
 	int32 | int64 | uint32 | uint64 | float32 | float64
 }
