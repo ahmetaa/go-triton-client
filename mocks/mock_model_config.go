@@ -194,3 +194,39 @@ func (mr *MockisModelWarmup_Input_InputDataTypeMockRecorder) isModelWarmup_Input
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "isModelWarmup_Input_InputDataType", reflect.TypeOf((*MockisModelWarmup_Input_InputDataType)(nil).isModelWarmup_Input_InputDataType))
 }
+
+// MockisModelMetrics_MetricControl_MetricOptions is a mock of isModelMetrics_MetricControl_MetricOptions interface.
+type MockisModelMetrics_MetricControl_MetricOptions struct {
+	ctrl     *gomock.Controller
+	recorder *MockisModelMetrics_MetricControl_MetricOptionsMockRecorder
+	isgomock struct{}
+}
+
+// MockisModelMetrics_MetricControl_MetricOptionsMockRecorder is the mock recorder for MockisModelMetrics_MetricControl_MetricOptions.
+type MockisModelMetrics_MetricControl_MetricOptionsMockRecorder struct {
+	mock *MockisModelMetrics_MetricControl_MetricOptions
+}
+
+// NewMockisModelMetrics_MetricControl_MetricOptions creates a new mock instance.
+func NewMockisModelMetrics_MetricControl_MetricOptions(ctrl *gomock.Controller) *MockisModelMetrics_MetricControl_MetricOptions {
+	mock := &MockisModelMetrics_MetricControl_MetricOptions{ctrl: ctrl}
+	mock.recorder = &MockisModelMetrics_MetricControl_MetricOptionsMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockisModelMetrics_MetricControl_MetricOptions) EXPECT() *MockisModelMetrics_MetricControl_MetricOptionsMockRecorder {
+	return m.recorder
+}
+
+// isModelMetrics_MetricControl_MetricOptions mocks base method.
+func (m *MockisModelMetrics_MetricControl_MetricOptions) isModelMetrics_MetricControl_MetricOptions() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "isModelMetrics_MetricControl_MetricOptions")
+}
+
+// isModelMetrics_MetricControl_MetricOptions indicates an expected call of isModelMetrics_MetricControl_MetricOptions.
+func (mr *MockisModelMetrics_MetricControl_MetricOptionsMockRecorder) isModelMetrics_MetricControl_MetricOptions() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "isModelMetrics_MetricControl_MetricOptions", reflect.TypeOf((*MockisModelMetrics_MetricControl_MetricOptions)(nil).isModelMetrics_MetricControl_MetricOptions))
+}
